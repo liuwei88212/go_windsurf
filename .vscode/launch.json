@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch",
+            "type": "go",
+            "request": "launch",
+            // "mode": "auto",
+            "mode": "debug",
+            "program": "${fileDirname}\\main.go",
+            "env":{
+                // "GOPATH":"D:\\workspace\\vscode\\go",
+                // "GOROOT":"D:\\runtime\\go\\Go"
+            },
+            "showGlobalVariables": false
+          }
+    ]
+}

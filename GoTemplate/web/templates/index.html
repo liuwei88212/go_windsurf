@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/modal.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <div>
+                <a href="/" style="color: var(--accent-color); font-weight: bold;">Home</a>
+                <a href="/items">Items</a>
+            </div>
+            <div>
+                <button id="loginButton" onclick="openLoginModal()" class="cta-button" style="padding: 0.6rem 1.5rem; border: none; cursor: pointer;">Login</button>
+                <span id="userInfo" style="display: none;"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeLoginModal()">&times;</span>
+            <h2 style="text-align: center; margin-bottom: 1.5rem; color: var(--primary-color);">Login</h2>
+            <form id="loginForm" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <div id="errorMessage" class="error-message"></div>
+            </form>
+        </div>
+    </div>
+
+    <header class="hero">
+        <div class="container">
+            <h1>{{.Title}}</h1>
+            <p>Experience the power of modern Go web development</p>
+            <a href="/items" class="cta-button">Explore Items</a>
+        </div>
+    </header>
+
+    <main class="container">
+        <section class="features">
+            <div class="feature-card">
+                <h3>Modern Architecture</h3>
+                <p>Built with Go's powerful standard library, offering exceptional performance and reliability for your web applications.</p>
+            </div>
+            <div class="feature-card">
+                <h3>RESTful API</h3>
+                <p>Comprehensive API support with JSON handling, perfect for building modern, scalable web services and applications.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Dynamic Templates</h3>
+                <p>Flexible Go templates for creating dynamic, responsive web pages with seamless data integration and modern UI.</p>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Modal functions
+        function openLoginModal() {
+            document.getElementById('loginModal').style.display = 'block';
+            document.getElementById('username').focus();
+        }
+
+        function closeLoginModal() {
+            document.getElementById('loginModal').style.display = 'none';
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('loginForm').reset();
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('loginModal');
+            if (event.target === modal) {
+                closeLoginModal();
+            }
+        }
+
+        // Handle login form submission
+        function handleLogin(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            fetch('/api/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    localStorage.setItem('token', data.token);
+                    localStorage.setItem('username', data.username);
+                    updateNavbar();
+                    closeLoginModal();
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during login');
+            });
+        }
+
+        function updateNavbar() {
+            const username = localStorage.getItem('username');
+            const loginButton = document.getElementById('loginButton');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (username) {
+                loginButton.style.display = 'none';
+                userInfo.style.display = 'block';
+                userInfo.textContent = `Welcome, ${username}`;
+            } else {
+                loginButton.style.display = 'block';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        // Call updateNavbar when page loads
+        document.addEventListener('DOMContentLoaded', updateNavbar);
+    </script>
+</body>
+</html>

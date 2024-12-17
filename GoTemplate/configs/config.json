@@ -1,0 +1,19 @@
+{
+    "server": {
+        "host": "localhost",
+        "port": "8081",
+        "readTimeout": 10000000000,
+        "writeTimeout": 10000000000
+    },
+    "database": {
+        "host": "localhost",
+        "port": "5432",
+        "user": "postgres",
+        "password": "",
+        "dbName": "myapp"
+    },
+    "logger": {
+        "level": "info",
+        "file": "logs/app.log"
+    }
+}

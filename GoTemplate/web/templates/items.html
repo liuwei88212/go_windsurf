@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{.Title}}</title>
+    <link rel="stylesheet" href="../static/css/main.css">
+    <link rel="stylesheet" href="../static/css/items.css">
+</head>
+<body>
+    <nav class="nav">
+        <div class="nav-container">
+            <div class="nav-links">
+                <a href="/" style="color: var(--accent-color); font-weight: bold;">Home</a>
+                <a href="/items" style="color: var(--secondary-color); font-weight: bold;">Items</a>
+            </div>
+            <div class="user-info">
+                <span class="user-name" id="username-display">Loading...</span>
+                <button onclick="handleLogout()" class="logout-button">Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h1 class="page-title">{{.Title}}</h1>
+
+        <div class="add-item-form">
+            <h2 style="margin-top: 0;">Add New Item</h2>
+            <form id="addItemForm" onsubmit="addItem(event)">
+                <div class="form-group">
+                    <label for="itemName">Name</label>
+                    <input type="text" id="itemName" required>
+                </div>
+                <div class="form-group">
+                    <label for="itemValue">Value</label>
+                    <input type="text" id="itemValue" required>
+                </div>
+                <button type="submit" class="button">Add Item</button>
+            </form>
+        </div>
+
+        <div class="items-grid" id="itemsContainer">
+            {{range .Items}}
+            <div class="item-card">
+                <h3>{{.Name}}</h3>
+                <p><strong>ID:</strong> {{.ID}}</p>
+                <p><strong>Value:</strong> {{.Value}}</p>
+            </div>
+            {{end}}
+        </div>
+    </main>
+
+    <script>
+        function updateNavbar() {
+            const username = localStorage.getItem('username');
+            const userInfo = document.getElementById('userInfo');
+            
+            if (username) {
+                userInfo.style.display = 'block';
+                userInfo.textContent = `Welcome, ${username}`;
+            } else {
+                window.location.href = '/';
+            }
+        }
+
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/';
+                return;
+            }
+            
+            // Display username (in a real app, you'd decode the JWT token or make an API call)
+            const username = localStorage.getItem('username') || 'Admin';
+            document.getElementById('username-display').textContent = username;
+            updateNavbar();
+            loadItems();
+        });
+
+        async function handleLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('username');
+            window.location.href = '/';
+        }
+
+        async function loadItems() {
+            try {
+                const response = await fetch('/api/items', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const items = await response.json();
+                
+                const container = document.getElementById('itemsContainer');
+                container.innerHTML = items.map(item => `
+                    <div class="item-card">
+                        <h3>${item.name}</h3>
+                        <p><strong>ID:</strong> ${item.id}</p>
+                        <p><strong>Value:</strong> ${item.value}</p>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Error loading items:', error);
+            }
+        }
+
+        async function addItem(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('itemName').value;
+            const value = document.getElementById('itemValue').value;
+            
+            try {
+                const response = await fetch('/api/items', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ name, value })
+                });
+
+                if (response.ok) {
+                    document.getElementById('addItemForm').reset();
+                    loadItems();
+                }
+            } catch (error) {
+                console.error('Error adding item:', error);
+            }
+        }
+    </script>
+</body>
+</html>
